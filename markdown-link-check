@@ -211,6 +211,18 @@ async function runMarkdownLinkCheck(markdown, opts) {
     });
 }
 
+async function readJsonFile(filename) {
+    const filePath = path.join(process.env.GITHUB_WORKSPACE, filename);
+    try {
+        const data = fs.readFileSync(filePath);
+        console.log(data.text)
+        return JSON.parse(data);
+    } catch (err) {
+        console.error(`Error reading file from ${filePath}: ${err}`);
+        return null;
+    }
+}
+
 async function main() {
     const inputs = getInputs();
 
@@ -218,6 +230,7 @@ async function main() {
     for await (const input of inputs) {
         try {
             await processInput(input.filenameForOutput, input.stream, input.opts);
+            await readJsonFile('data.json');
         } catch (err) {
             isOk = false;
         }
