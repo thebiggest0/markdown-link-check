@@ -202,6 +202,7 @@ async function runMarkdownLinkCheck(markdown, opts) {
                 console.warn(chalk.yellow('\n  WARN: %s dead links found!'), deadLinks.length);
                 deadLinks.forEach(function (result) {
                     console.log('  [%s] %s → Status: %s', statusLabels[result.status], result.link, result.statusCode);
+                    addBrokenLink(data, result.link);
                 });
                 // reject();
             }
@@ -212,10 +213,11 @@ async function runMarkdownLinkCheck(markdown, opts) {
 }
 
 async function readJsonFile(filename) {
-    const filePath = path.join(process.env.GITHUB_WORKSPACE, filename);
+    // const filePath = path.join(__dirname, '..', '..', filename);
+    const rootDir = process.cwd();
+    const filePath = path.join(rootDir, filename);
     try {
         const data = fs.readFileSync(filePath);
-        console.log(data.text)
         return JSON.parse(data);
     } catch (err) {
         console.error(`Error reading file from ${filePath}: ${err}`);
@@ -223,18 +225,50 @@ async function readJsonFile(filename) {
     }
 }
 
+async function writeJsonFile(filename, data) {
+    const rootDir = process.cwd();
+    const filePath = path.join(rootDir, filename);
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 4));
+    } catch (err) {
+        console.error(`Error writing file to ${filePath}: ${err}`);
+        return null;
+    }
+}
+
+function addBrokenLink(data, link) {
+    if (link in data) {
+        data[link].latest_date = new Date().toISOString().split('T')[0];
+    } else {
+        data[link] = {
+            initial_date: new Date().toISOString().split('T')[0],
+            latest_date: new Date().toISOString().split('T')[0]
+        };
+    }
+}
+
+
+
 async function main() {
     const inputs = getInputs();
+
+    // read json and store it in data variable
+    const data = await readJsonFile('data.json');
 
     let isOk = true;
     for await (const input of inputs) {
         try {
-            await processInput(input.filenameForOutput, input.stream, input.opts);
-            await readJsonFile('data.json');
+            await processInput(input.filenameForOutput, input.stream, input.opts, data);
+            // await readJsonFile('data.json');
+            await writeJsonFile('data.json', data);
         } catch (err) {
             isOk = false;
         }
     }
+
+    // double check the dead links and write them to a json file
+
+    // write data to json file
 
     process.exit(isOk ? 0 : 1);
 }
