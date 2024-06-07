@@ -242,7 +242,8 @@ function addBrokenLink(data, link) {
     } else {
         data[link] = {
             initial_date: new Date().toISOString().split('T')[0],
-            latest_date: new Date().toISOString().split('T')[0]
+            latest_date: new Date().toISOString().split('T')[0],
+            broken: false
         };
     }
 }
