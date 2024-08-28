@@ -167,7 +167,7 @@ async function processInput(filenameForOutput, stream, opts, data) {
     await runMarkdownLinkCheck(markdown, opts, data, filenameForOutput);
 }
 
-async function runMarkdownLinkCheck(markdown, opts, data) {
+async function runMarkdownLinkCheck(markdown, opts, data, url) {
     return new Promise((resolve, reject) => {
         markdownLinkCheck(markdown, opts, function (err, results) {
             if (err) {
