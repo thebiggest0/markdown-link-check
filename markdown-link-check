@@ -236,11 +236,12 @@ async function writeJsonFile(filename, data) {
 }
 
 function addBrokenLink(data, link, url) {
+    console.log("THIS IS THE URL", url)
     if (link in data) {
         data[link].latest_date = new Date().toISOString().split('T')[0];
     } else {
         data[link] = {
-            url: url,
+            "url": url,
             initial_date: new Date().toISOString().split('T')[0],
             latest_date: new Date().toISOString().split('T')[0],
             broken: false
