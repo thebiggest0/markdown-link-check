@@ -164,7 +164,7 @@ async function processInput(filenameForOutput, stream, opts, data) {
         opts.aliveStatusCodes = config.aliveStatusCodes;
     }
 
-    await runMarkdownLinkCheck(markdown, opts, data);
+    await runMarkdownLinkCheck(markdown, opts, data, filenameForOutput);
 }
 
 async function runMarkdownLinkCheck(markdown, opts, data) {
@@ -202,7 +202,7 @@ async function runMarkdownLinkCheck(markdown, opts, data) {
                 console.warn(chalk.yellow('\n  WARN: %s dead links found!'), deadLinks.length);
                 deadLinks.forEach(function (result) {
                     console.log('  [%s] %s → Status: %s', statusLabels[result.status], result.link, result.statusCode);
-                    addBrokenLink(data, result.link);
+                    addBrokenLink(data, result.link, url);
                 });
                 // reject();
             }
@@ -213,7 +213,6 @@ async function runMarkdownLinkCheck(markdown, opts, data) {
 }
 
 async function readJsonFile(filename) {
-    // const filePath = path.join(__dirname, '..', '..', filename);
     const rootDir = process.cwd();
     const filePath = path.join(rootDir, filename);
     try {
@@ -236,11 +235,12 @@ async function writeJsonFile(filename, data) {
     }
 }
 
-function addBrokenLink(data, link) {
+function addBrokenLink(data, link, url) {
     if (link in data) {
         data[link].latest_date = new Date().toISOString().split('T')[0];
     } else {
         data[link] = {
+            url: url,
             initial_date: new Date().toISOString().split('T')[0],
             latest_date: new Date().toISOString().split('T')[0],
             broken: false
@@ -250,8 +250,6 @@ function addBrokenLink(data, link) {
 
 async function main() {
     const inputs = getInputs();
-
-    // read json and store it in data variable
     const data = await readJsonFile('data.json');
 
     let isOk = true;
@@ -267,3 +265,4 @@ async function main() {
 }
 
 main();
+//     "markdown-link-check": "git+https://git@github.com/thebiggest0/markdown-link-check.git#57b14aea1e63daf741f3f48bd2fe6c57c806f2b1",
